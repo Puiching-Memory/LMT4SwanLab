@@ -194,7 +194,18 @@
 					}
 				}
 			}
-		]
+		],
+		"configuration": {
+			"type": "object",
+			"title": "SwanLab Settings",
+			"properties": {
+				"swanlab.apiKey": {
+					"type": "string",
+					"description": "API Key for SwanLab authentication",
+					"default": ""
+				}
+			}
+		}
 	},
 	"main": "./out/extension.js",
 	"scripts": {
@@ -205,7 +216,8 @@
 	},
 	"dependencies": {
 		"@vscode/chat-extension-utils": "^0.0.0-alpha.1",
-		"@vscode/prompt-tsx": "^0.3.0-alpha.12"
+		"@vscode/prompt-tsx": "^0.3.0-alpha.12",
+		"axios": "^1.7.9"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.13.0",
