@@ -1,0 +1,3 @@
+[submodule "SwanLab"]
+	path = SwanLab
+	url = https://github.com/SwanHubX/SwanLab.git

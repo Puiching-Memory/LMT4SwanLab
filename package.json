@@ -1,13 +1,13 @@
 {
-	"name": "chat-sample",
-	"publisher": "vscode-samples",
-	"displayName": "Copilot Chat Sample",
-	"description": "Sample chat extension, a trusty cat tutor that will can teach you computer science topics.",
+	"name": "lmt4swanlab",
+	"publisher": "梦归云帆",
+	"displayName": "LMT4SwanLab",
+	"description": "languageModelTools for SwanLab",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Microsoft/vscode-extension-samples"
 	},
-	"version": "0.1.0",
+	"version": "1.0.0",
 	"engines": {
 		"vscode": "^1.100.0"
 	},
@@ -17,86 +17,16 @@
 	],
 	"activationEvents": [],
 	"contributes": {
-		"chatParticipants": [
-			{
-				"id": "chat-sample.cat",
-				"fullName": "Cat",
-				"name": "cat",
-				"description": "Meow! What can I teach you?",
-				"isSticky": true,
-				"commands": [
-					{
-						"name": "randomTeach",
-						"description": "Pick at random a computer science concept then explain it in purfect way of a cat"
-					},
-					{
-						"name": "play",
-						"description": "Do whatever you want, you are a cat after all",
-						"disambiguation": [
-							{
-								"category": "cat_play",
-								"description": "The user just wants to relax and see the cat play.",
-								"examples": [
-									"Enough learning, let the cat play with a ball of yarn",
-									"Can you show me a cat playing with a laser pointer?"
-								]
-							}
-						]
-					}
-				],
-				"disambiguation": [
-					{
-						"category": "cat",
-						"description": "The user wants to learn a specific computer science topic in an informal way.",
-						"examples": [
-							"Teach me C++ pointers using metaphors",
-							"Explain to me what is a linked list in a simple way",
-							"Can you explain to me what is a function in programming?"
-						]
-					}
-				]
-			},
-			{
-				"id": "chat-tools-sample.tools",
-				"fullName": "Tool User",
-				"name": "tools",
-				"description": "I use tools",
-				"isSticky": true,
-				"commands": [
-					{
-						"name": "list",
-						"description": "List all available tools"
-					},
-					{
-						"name": "all",
-						"description": "Use all registered tools. By default, only this extension's tools are used."
-					}
-				]
-			},
-			{
-				"id": "chat-tools-sample.catTools",
-				"fullName": "Cat (Tools)",
-				"name": "catTools",
-				"description": "I use tools, implemented using @vscode/chat-extension-utils, and am also a cat",
-				"isSticky": true,
-				"commands": [
-					{
-						"name": "all",
-						"description": "Use all registered tools. By default, only this extension's tools are used."
-					}
-				]
-			}
-		],
 		"languageModelTools": [
 			{
-				"name": "chat-tools-sample_tabCount",
+				"name": "LMT4SwanLab-SwanLabListWorkspaces",
 				"tags": [
 					"editors",
-					"chat-tools-sample"
+					"SwanLab-SwanLabListWorkspaces"
 				],
-				"toolReferenceName": "countTabs",
-				"displayName": "Tab Count",
-				"modelDescription": "The number of active tabs in a tab group",
+				"toolReferenceName": "ListWorkspaces",
+				"displayName": "ListWorkspaces",
+				"modelDescription": "Get the list of all workspaces (organizations) of current SwanLab users",
 				"canBeReferencedInPrompt": true,
 				"icon": "$(files)",
 				"inputSchema": {
@@ -111,56 +41,158 @@
 				}
 			},
 			{
-				"name": "chat-tools-sample_findFiles",
+				"name": "LMT4SwanLab-SwanLabListProjects",
 				"tags": [
-					"files",
-					"search",
-					"chat-tools-sample"
+					"editors",
+					"SwanLab-SwanLabListProjects"
 				],
-				"toolReferenceName": "findFiles",
-				"displayName": "Find Files",
-				"modelDescription": "Search for files in the current workspace",
+				"toolReferenceName": "ListProjects",
+				"displayName": "ListProjects",
+				"modelDescription": "Get the list of all projects under the specified workspace of SwanLab",
 				"canBeReferencedInPrompt": true,
+				"icon": "$(files)",
 				"inputSchema": {
 					"type": "object",
 					"properties": {
-						"pattern": {
-							"type": "string",
-							"description": "Search for files that match this glob pattern"
+						"tabGroup": {
+							"type": "number",
+							"description": "The index of the tab group to check. This is optional- if not specified, the active tab group will be checked.",
+							"default": 0
 						}
-					},
-					"required": [
-						"pattern"
-					]
+					}
 				}
 			},
 			{
-				"name": "chat-tools-sample_runInTerminal",
+				"name": "LMT4SwanLab-SwanLabDeleteProject",
 				"tags": [
-					"terminal",
-					"chat-tools-sample"
+					"editors",
+					"SwanLab-SwanLabDeleteProject"
 				],
-				"displayName": "Run in Terminal",
-				"modelDescription": "Run a command in a terminal and return the output",
-				"canBeReferencedInPrompt": false,
+				"toolReferenceName": "DeleteProject",
+				"displayName": "DeleteProject",
+				"modelDescription": "Delete a SwanLab project",
+				"canBeReferencedInPrompt": true,
+				"icon": "$(files)",
 				"inputSchema": {
 					"type": "object",
 					"properties": {
-						"command": {
-							"type": "string",
-							"description": "The command to run"
+						"tabGroup": {
+							"type": "number",
+							"description": "The index of the tab group to check. This is optional- if not specified, the active tab group will be checked.",
+							"default": 0
 						}
-					},
-					"required": [
-						"command"
-					]
+					}
 				}
-			}
-		],
-		"commands": [
+			},
 			{
-				"command": "cat.namesInEditor",
-				"title": "Use Cat Names in Editor"
+				"name": "LMT4SwanLab-SwanLabListExperiments",
+				"tags": [
+					"editors",
+					"SwanLab-SwanLabListExperiments"
+				],
+				"toolReferenceName": "ListExperiments",
+				"displayName": "ListExperiments",
+				"modelDescription": "Obtain the list of all experiments under the specified SwanLab project",
+				"canBeReferencedInPrompt": true,
+				"icon": "$(files)",
+				"inputSchema": {
+					"type": "object",
+					"properties": {
+						"tabGroup": {
+							"type": "number",
+							"description": "The index of the tab group to check. This is optional- if not specified, the active tab group will be checked.",
+							"default": 0
+						}
+					}
+				}
+			},
+			{
+				"name": "LMT4SwanLab-SwanLabGetExperiment",
+				"tags": [
+					"editors",
+					"SwanLab-SwanLabGetExperiment"
+				],
+				"toolReferenceName": "GetExperiment",
+				"displayName": "GetExperiment",
+				"modelDescription": "Obtain detailed information about a SwanLab experiment (experiment name, configuration, environment, etc.)",
+				"canBeReferencedInPrompt": true,
+				"icon": "$(files)",
+				"inputSchema": {
+					"type": "object",
+					"properties": {
+						"tabGroup": {
+							"type": "number",
+							"description": "The index of the tab group to check. This is optional- if not specified, the active tab group will be checked.",
+							"default": 0
+						}
+					}
+				}
+			},
+			{
+				"name": "LMT4SwanLab-SwanLabGetSummary",
+				"tags": [
+					"editors",
+					"SwanLab-SwanLabGetSummary"
+				],
+				"toolReferenceName": "GetSummary",
+				"displayName": "GetSummary",
+				"modelDescription": "Obtain the Summary information of a SwanLab experiment, including the final values and maximum and minimum values of the experiment tracking metrics",
+				"canBeReferencedInPrompt": true,
+				"icon": "$(files)",
+				"inputSchema": {
+					"type": "object",
+					"properties": {
+						"tabGroup": {
+							"type": "number",
+							"description": "The index of the tab group to check. This is optional- if not specified, the active tab group will be checked.",
+							"default": 0
+						}
+					}
+				}
+			},
+			{
+				"name": "LMT4SwanLab-SwanLabGetMetrics",
+				"tags": [
+					"editors",
+					"SwanLab-SwanLabGetMetrics"
+				],
+				"toolReferenceName": "GetMetrics",
+				"displayName": "GetMetrics",
+				"modelDescription": "Obtain the value of a SwanLab experimental metric",
+				"canBeReferencedInPrompt": true,
+				"icon": "$(files)",
+				"inputSchema": {
+					"type": "object",
+					"properties": {
+						"tabGroup": {
+							"type": "number",
+							"description": "The index of the tab group to check. This is optional- if not specified, the active tab group will be checked.",
+							"default": 0
+						}
+					}
+				}
+			},
+			{
+				"name": "LMT4SwanLab-SwanLabDeleteExperiment",
+				"tags": [
+					"editors",
+					"SwanLab-SwanLabDeleteExperiment"
+				],
+				"toolReferenceName": "DeleteExperiment",
+				"displayName": "DeleteExperiment",
+				"modelDescription": "Delete a SwanLab experiment",
+				"canBeReferencedInPrompt": true,
+				"icon": "$(files)",
+				"inputSchema": {
+					"type": "object",
+					"properties": {
+						"tabGroup": {
+							"type": "number",
+							"description": "The index of the tab group to check. This is optional- if not specified, the active tab group will be checked.",
+							"default": 0
+						}
+					}
+				}
 			}
 		]
 	},
