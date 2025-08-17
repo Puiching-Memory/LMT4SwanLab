@@ -1,0 +1,20 @@
+{
+  "displayName": "LMT4SwanLab",
+  "description": "SwanLab 的语言模型工具",
+  "tool.listWorkspaces.name": "列出工作空间",
+  "tool.listWorkspaces.description": "列出当前 SwanLab 用户的所有工作空间",
+  "tool.listProjects.name": "列出项目",
+  "tool.listProjects.description": "列出工作空间中的所有项目",
+  "tool.listExperiments.name": "列出实验",
+  "tool.listExperiments.description": "列出项目中的所有实验",
+  "tool.getExperiment.name": "获取实验",
+  "tool.getExperiment.description": "获取实验的详细信息",
+  "tool.getSummary.name": "获取摘要",
+  "tool.getSummary.description": "获取实验的摘要信息",
+  "tool.getMetrics.name": "获取指标",
+  "tool.getMetrics.description": "获取实验的指标数据",
+  "tool.deleteExperiment.name": "删除实验",
+  "tool.deleteExperiment.description": "删除实验",
+  "tool.deleteProject.name": "删除项目",
+  "tool.deleteProject.description": "删除项目"
+}

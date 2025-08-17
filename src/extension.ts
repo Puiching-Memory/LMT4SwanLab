@@ -17,7 +17,7 @@ function createSwanLabApi(): { api: SwanLabApi, errorResult?: vscode.LanguageMod
         return { 
             api: null as any, 
             errorResult: new vscode.LanguageModelToolResult([
-                new vscode.LanguageModelTextPart("SwanLab API key not configured. Please set 'swanlab.apiKey' in your settings.")
+                new vscode.LanguageModelTextPart(vscode.l10n.t("SwanLab API key not configured. Please set 'swanlab.apiKey' in your settings."))
             ])
         };
     }
@@ -70,7 +70,7 @@ ${resultJson}
     }
 
     protected formatError(error: any): string {
-        return `Error: ${error instanceof Error ? error.message : String(error)}`;
+        return vscode.l10n.t("Error: {0}", error instanceof Error ? error.message : String(error));
     }
 }
 
@@ -98,11 +98,12 @@ interface IListWorkspacesParameters {
 class SwanLabListWorkspacesTool extends SwanLabTool<IListWorkspacesParameters> {
     protected async prepare(_options: vscode.LanguageModelToolInvocationPrepareOptions<IListWorkspacesParameters>) {
         const confirmationMessages = {
-            title: 'List SwanLab Workspaces',
-            message: new vscode.MarkdownString("Get the list of all workspaces (organizations) of current SwanLab users")
+            title: vscode.l10n.t('List SwanLab Workspaces'),
+            message: new vscode.MarkdownString(vscode.l10n.t('List all workspaces of the current SwanLab user'))
         };
+
         return {
-            invocationMessage: 'Getting list of SwanLab workspaces',
+            invocationMessage: vscode.l10n.t('List SwanLab Workspaces'),
             confirmationMessages
         };
     }
@@ -110,31 +111,46 @@ class SwanLabListWorkspacesTool extends SwanLabTool<IListWorkspacesParameters> {
     protected async execute(api: SwanLabApi, _input: IListWorkspacesParameters): Promise<Workspace[]> {
         return await api.listWorkspaces();
     }
+
+    protected formatResult(result: Workspace[]): vscode.LanguageModelToolResult {
+        return new vscode.LanguageModelToolResult([
+            new vscode.LanguageModelTextPart(`\`\`\`json
+${JSON.stringify(result, null, 2)}
+\`\`\``),
+            new vscode.LanguageModelTextPart('\n\n' + result.map(w => vscode.l10n.t("Workspace: {0}", w.name)).join('\n'))
+        ]);
+    }
 }
 
 // ListProjects工具的参数接口
 interface IListProjectsParameters {
     workspace?: string;
-    detail?: boolean;
-    tabGroup?: number;
 }
 
 class SwanLabListProjectsTool extends SwanLabTool<IListProjectsParameters> {
-    protected async prepare(options: vscode.LanguageModelToolInvocationPrepareOptions<IListProjectsParameters>) {
+    protected async prepare(_options: vscode.LanguageModelToolInvocationPrepareOptions<IListProjectsParameters>) {
+        const confirmationMessages = {
+            title: vscode.l10n.t('List SwanLab Projects'),
+            message: new vscode.MarkdownString(vscode.l10n.t('List all projects in a workspace'))
+        };
+
         return {
-            invocationMessage: 'Getting list of SwanLab projects',
-            confirmationMessages: {
-                title: 'List SwanLab Projects',
-                message: new vscode.MarkdownString(`Get the list of all projects under the workspace: ${options.input.workspace || 'default workspace'}`)
-            }
+            invocationMessage: vscode.l10n.t('List SwanLab Projects'),
+            confirmationMessages
         };
     }
 
     protected async execute(api: SwanLabApi, input: IListProjectsParameters): Promise<Project[]> {
-        return await api.listProjects(
-            input.workspace,
-            input.detail !== false // 默认为true
-        );
+        return await api.listProjects(input.workspace);
+    }
+
+    protected formatResult(result: Project[]): vscode.LanguageModelToolResult {
+        return new vscode.LanguageModelToolResult([
+            new vscode.LanguageModelTextPart(`\`\`\`json
+${JSON.stringify(result, null, 2)}
+\`\`\``),
+            new vscode.LanguageModelTextPart('\n\n' + result.map(p => vscode.l10n.t("Project: {0}", p.name)).join('\n'))
+        ]);
     }
 }
 
@@ -142,30 +158,32 @@ class SwanLabListProjectsTool extends SwanLabTool<IListProjectsParameters> {
 interface IListExperimentsParameters {
     project: string;
     workspace?: string;
-    tabGroup?: number;
 }
 
 class SwanLabListExperimentsTool extends SwanLabTool<IListExperimentsParameters> {
-    protected async prepare(options: vscode.LanguageModelToolInvocationPrepareOptions<IListExperimentsParameters>) {
+    protected async prepare(_options: vscode.LanguageModelToolInvocationPrepareOptions<IListExperimentsParameters>) {
+        const confirmationMessages = {
+            title: vscode.l10n.t('List SwanLab Experiments'),
+            message: new vscode.MarkdownString(vscode.l10n.t('List all experiments in a project'))
+        };
+
         return {
-            invocationMessage: `Getting list of SwanLab experiments in project: ${options.input.project}`,
-            confirmationMessages: {
-                title: 'List SwanLab Experiments',
-                message: new vscode.MarkdownString(`Get the list of all experiments under the project: ${options.input.project} in the workspace: ${options.input.workspace || 'default workspace'}`)
-            }
+            invocationMessage: vscode.l10n.t('List SwanLab Experiments'),
+            confirmationMessages
         };
     }
 
     protected async execute(api: SwanLabApi, input: IListExperimentsParameters): Promise<Experiment[]> {
-        // 检查必要参数
-        if (!input.project) {
-            throw new Error("Project name is required.");
-        }
+        return await api.listExperiments(input.project, input.workspace);
+    }
 
-        return await api.listExperiments(
-            input.project,
-            input.workspace
-        );
+    protected formatResult(result: Experiment[]): vscode.LanguageModelToolResult {
+        return new vscode.LanguageModelToolResult([
+            new vscode.LanguageModelTextPart(`\`\`\`json
+${JSON.stringify(result, null, 2)}
+\`\`\``),
+            new vscode.LanguageModelTextPart('\n\n' + result.map(e => vscode.l10n.t("Experiment: {0}", e.name)).join('\n'))
+        ]);
     }
 }
 
@@ -174,35 +192,23 @@ interface IGetExperimentParameters {
     project: string;
     expId: string;
     workspace?: string;
-    tabGroup?: number;
 }
 
 class SwanLabGetExperimentTool extends SwanLabTool<IGetExperimentParameters> {
-    protected async prepare(options: vscode.LanguageModelToolInvocationPrepareOptions<IGetExperimentParameters>) {
+    protected async prepare(_options: vscode.LanguageModelToolInvocationPrepareOptions<IGetExperimentParameters>) {
+        const confirmationMessages = {
+            title: vscode.l10n.t('Get SwanLab Experiment'),
+            message: new vscode.MarkdownString(vscode.l10n.t('Get detailed information about an experiment'))
+        };
+
         return {
-            invocationMessage: `Getting SwanLab experiment: ${options.input.expId}`,
-            confirmationMessages: {
-                title: 'Get SwanLab Experiment',
-                message: new vscode.MarkdownString(`Get detailed information about experiment "${options.input.expId}" in project "${options.input.project}" in the workspace "${options.input.workspace || 'default workspace'}"`)
-            }
+            invocationMessage: vscode.l10n.t('Get SwanLab Experiment'),
+            confirmationMessages
         };
     }
 
     protected async execute(api: SwanLabApi, input: IGetExperimentParameters): Promise<Experiment> {
-        // 检查必要参数
-        if (!input.project) {
-            throw new Error("Project name is required.");
-        }
-
-        if (!input.expId) {
-            throw new Error("Experiment ID is required.");
-        }
-
-        return await api.getExperiment(
-            input.project,
-            input.expId,
-            input.workspace
-        );
+        return await api.getExperiment(input.project, input.expId, input.workspace);
     }
 }
 
@@ -211,35 +217,23 @@ interface IGetSummaryParameters {
     project: string;
     expId: string;
     workspace?: string;
-    tabGroup?: number;
 }
 
 class SwanLabGetSummaryTool extends SwanLabTool<IGetSummaryParameters> {
-    protected async prepare(options: vscode.LanguageModelToolInvocationPrepareOptions<IGetSummaryParameters>) {
+    protected async prepare(_options: vscode.LanguageModelToolInvocationPrepareOptions<IGetSummaryParameters>) {
+        const confirmationMessages = {
+            title: vscode.l10n.t('Get SwanLab Summary'),
+            message: new vscode.MarkdownString(vscode.l10n.t('Get summary information of an experiment'))
+        };
+
         return {
-            invocationMessage: `Getting SwanLab experiment summary: ${options.input.expId}`,
-            confirmationMessages: {
-                title: 'Get SwanLab Experiment Summary',
-                message: new vscode.MarkdownString(`Get summary information about experiment "${options.input.expId}" in project "${options.input.project}" in the workspace "${options.input.workspace || 'default workspace'}"`)
-            }
+            invocationMessage: vscode.l10n.t('Get SwanLab Summary'),
+            confirmationMessages
         };
     }
 
     protected async execute(api: SwanLabApi, input: IGetSummaryParameters): Promise<Summary> {
-        // 检查必要参数
-        if (!input.project) {
-            throw new Error("Project name is required.");
-        }
-
-        if (!input.expId) {
-            throw new Error("Experiment ID is required.");
-        }
-
-        return await api.getSummary(
-            input.project,
-            input.expId,
-            input.workspace
-        );
+        return await api.getSummary(input.project, input.expId, input.workspace);
     }
 }
 
@@ -247,37 +241,23 @@ class SwanLabGetSummaryTool extends SwanLabTool<IGetSummaryParameters> {
 interface IGetMetricsParameters {
     expId: string;
     keys: string | string[];
-    tabGroup?: number;
 }
 
 class SwanLabGetMetricsTool extends SwanLabTool<IGetMetricsParameters> {
-    protected async prepare(options: vscode.LanguageModelToolInvocationPrepareOptions<IGetMetricsParameters>) {
-        const expId = options.input.expId;
-        const keys = Array.isArray(options.input.keys) ? options.input.keys.join(', ') : options.input.keys;
+    protected async prepare(_options: vscode.LanguageModelToolInvocationPrepareOptions<IGetMetricsParameters>) {
         const confirmationMessages = {
-            title: 'Get SwanLab Experiment Metrics',
-            message: new vscode.MarkdownString(`Get metrics data for keys "${keys}" in experiment "${expId}"`)
+            title: vscode.l10n.t('Get SwanLab Metrics'),
+            message: new vscode.MarkdownString(vscode.l10n.t('Get metrics data of an experiment'))
         };
+
         return {
-            invocationMessage: `Getting SwanLab experiment metrics: ${expId}`,
+            invocationMessage: vscode.l10n.t('Get SwanLab Metrics'),
             confirmationMessages
         };
     }
 
     protected async execute(api: SwanLabApi, input: IGetMetricsParameters): Promise<MetricsData> {
-        // 检查必要参数
-        if (!input.expId) {
-            throw new Error("Experiment ID is required.");
-        }
-
-        if (!input.keys) {
-            throw new Error("Metric key(s) are required.");
-        }
-
-        return await api.getMetrics(
-            input.expId,
-            input.keys
-        );
+        return await api.getMetrics(input.expId, input.keys);
     }
 }
 
@@ -286,43 +266,24 @@ interface IDeleteExperimentParameters {
     project: string;
     expId: string;
     workspace?: string;
-    tabGroup?: number;
 }
 
 class SwanLabDeleteExperimentTool extends SwanLabTool<IDeleteExperimentParameters> {
-    protected async prepare(options: vscode.LanguageModelToolInvocationPrepareOptions<IDeleteExperimentParameters>) {
+    protected async prepare(_options: vscode.LanguageModelToolInvocationPrepareOptions<IDeleteExperimentParameters>) {
+        const confirmationMessages = {
+            title: vscode.l10n.t('Delete SwanLab Experiment'),
+            message: new vscode.MarkdownString(vscode.l10n.t('Delete an experiment'))
+        };
+
         return {
-            invocationMessage: `Deleting SwanLab experiment: ${options.input.expId}`,
-            confirmationMessages: {
-                title: 'Delete SwanLab Experiment',
-                message: new vscode.MarkdownString(`Delete the experiment "${options.input.expId}" in project "${options.input.project}" in the workspace "${options.input.workspace || 'default workspace'}"`)
-            }
+            invocationMessage: vscode.l10n.t('Delete SwanLab Experiment'),
+            confirmationMessages
         };
     }
 
-    protected async execute(api: SwanLabApi, input: IDeleteExperimentParameters): Promise<string> {
-        // 检查必要参数
-        if (!input.project) {
-            throw new Error("Project name is required.");
-        }
-
-        if (!input.expId) {
-            throw new Error("Experiment ID is required.");
-        }
-
-        await api.deleteExperiment(
-            input.project,
-            input.expId,
-            input.workspace
-        );
-
-        return `Successfully deleted experiment "${input.expId}" in project "${input.project}"`;
-    }
-
-    protected formatResult(result: string): vscode.LanguageModelToolResult {
-        return new vscode.LanguageModelToolResult([
-            new vscode.LanguageModelTextPart(result)
-        ]);
+    protected async execute(api: SwanLabApi, input: IDeleteExperimentParameters): Promise<{ message: string }> {
+        await api.deleteExperiment(input.project, input.expId, input.workspace);
+        return { message: "Experiment deleted successfully" };
     }
 }
 
@@ -330,40 +291,26 @@ class SwanLabDeleteExperimentTool extends SwanLabTool<IDeleteExperimentParameter
 interface IDeleteProjectParameters {
     project: string;
     workspace?: string;
-    tabGroup?: number;
 }
 
 class SwanLabDeleteProjectTool extends SwanLabTool<IDeleteProjectParameters> {
-    protected async prepare(options: vscode.LanguageModelToolInvocationPrepareOptions<IDeleteProjectParameters>) {
+    protected async prepare(_options: vscode.LanguageModelToolInvocationPrepareOptions<IDeleteProjectParameters>) {
+        const confirmationMessages = {
+            title: vscode.l10n.t('Delete SwanLab Project'),
+            message: new vscode.MarkdownString(vscode.l10n.t('Delete a project'))
+        };
+
         return {
-            invocationMessage: `Deleting SwanLab project: ${options.input.project}`,
-            confirmationMessages: {
-                title: 'Delete SwanLab Project',
-                message: new vscode.MarkdownString(`Delete the project "${options.input.project}" in the workspace "${options.input.workspace || 'default workspace'}"`)
-            }
+            invocationMessage: vscode.l10n.t('Delete SwanLab Project'),
+            confirmationMessages
         };
     }
 
-    protected async execute(api: SwanLabApi, input: IDeleteProjectParameters): Promise<string> {
-        // 检查必要参数
-        if (!input.project) {
-            throw new Error("Project name is required.");
-        }
-
-        await api.deleteProject(
-            input.project,
-            input.workspace
-        );
-
-        return `Successfully deleted project "${input.project}"`;
-    }
-
-    protected formatResult(result: string): vscode.LanguageModelToolResult {
-        return new vscode.LanguageModelToolResult([
-            new vscode.LanguageModelTextPart(result)
-        ]);
+    protected async execute(api: SwanLabApi, input: IDeleteProjectParameters): Promise<{ message: string }> {
+        await api.deleteProject(input.project, input.workspace);
+        return { message: "Project deleted successfully" };
     }
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() { }

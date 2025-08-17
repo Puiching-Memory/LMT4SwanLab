@@ -1,0 +1,20 @@
+{
+  "displayName": "LMT4SwanLab",
+  "description": "A language model tool for SwanLab",
+  "tool.listWorkspaces.name": "List Workspaces",
+  "tool.listWorkspaces.description": "List all workspaces of the current SwanLab user",
+  "tool.listProjects.name": "List Projects",
+  "tool.listProjects.description": "List all projects in a workspace",
+  "tool.listExperiments.name": "List Experiments",
+  "tool.listExperiments.description": "List all experiments in a project",
+  "tool.getExperiment.name": "Get Experiment",
+  "tool.getExperiment.description": "Get detailed information about an experiment",
+  "tool.getSummary.name": "Get Summary",
+  "tool.getSummary.description": "Get summary information of an experiment",
+  "tool.getMetrics.name": "Get Metrics",
+  "tool.getMetrics.description": "Get metrics data of an experiment",
+  "tool.deleteExperiment.name": "Delete Experiment",
+  "tool.deleteExperiment.description": "Delete an experiment",
+  "tool.deleteProject.name": "Delete Project",
+  "tool.deleteProject.description": "Delete a project"
+}
