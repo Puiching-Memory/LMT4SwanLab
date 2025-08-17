@@ -28,7 +28,7 @@
 				"displayName": "ListWorkspaces",
 				"modelDescription": "Get the list of all workspaces (organizations) of current SwanLab users",
 				"canBeReferencedInPrompt": true,
-				"icon": "$(files)",
+				"icon": "$(organization)",
 				"inputSchema": {
 				}
 			},
@@ -42,7 +42,7 @@
 				"displayName": "ListProjects",
 				"modelDescription": "Get the list of all projects under the specified workspace of SwanLab",
 				"canBeReferencedInPrompt": true,
-				"icon": "$(files)",
+				"icon": "$(project)",
 				"inputSchema": {
 					"type": "object",
 					"properties": {
@@ -63,7 +63,7 @@
 				"displayName": "DeleteProject",
 				"modelDescription": "Delete a SwanLab project",
 				"canBeReferencedInPrompt": true,
-				"icon": "$(files)",
+				"icon": "$(trash)",
 				"inputSchema": {
 					"type": "object",
 					"properties": {
@@ -89,16 +89,20 @@
 				"displayName": "ListExperiments",
 				"modelDescription": "Obtain the list of all experiments under the specified SwanLab project",
 				"canBeReferencedInPrompt": true,
-				"icon": "$(files)",
+				"icon": "$(beaker)",
 				"inputSchema": {
 					"type": "object",
 					"properties": {
-						"tabGroup": {
-							"type": "number",
-							"description": "The index of the tab group to check. This is optional- if not specified, the active tab group will be checked.",
-							"default": 0
+						"project": {
+							"type": "string",
+							"description": "The project name to list experiments from"
+						},
+						"workspace": {
+							"type": "string",
+							"description": "The workspace name. If not specified, the current user's personal workspace will be used."
 						}
-					}
+					},
+					"required": ["project"]
 				}
 			},
 			{
@@ -111,16 +115,24 @@
 				"displayName": "GetExperiment",
 				"modelDescription": "Obtain detailed information about a SwanLab experiment (experiment name, configuration, environment, etc.)",
 				"canBeReferencedInPrompt": true,
-				"icon": "$(files)",
+				"icon": "$(info)",
 				"inputSchema": {
 					"type": "object",
 					"properties": {
-						"tabGroup": {
-							"type": "number",
-							"description": "The index of the tab group to check. This is optional- if not specified, the active tab group will be checked.",
-							"default": 0
+						"project": {
+							"type": "string",
+							"description": "The project name"
+						},
+						"expId": {
+							"type": "string",
+							"description": "The experiment CUID"
+						},
+						"workspace": {
+							"type": "string",
+							"description": "The workspace name. If not specified, the current user's personal workspace will be used."
 						}
-					}
+					},
+					"required": ["project", "expId"]
 				}
 			},
 			{
@@ -131,18 +143,26 @@
 				],
 				"toolReferenceName": "GetSummary",
 				"displayName": "GetSummary",
-				"modelDescription": "Obtain the Summary information of a SwanLab experiment, including the final values and maximum and minimum values of the experiment tracking metrics",
+				"modelDescription": "Obtain summary information of a SwanLab experiment, including the final value and maximum/minimum values of tracked metrics",
 				"canBeReferencedInPrompt": true,
-				"icon": "$(files)",
+				"icon": "$(graph)",
 				"inputSchema": {
 					"type": "object",
 					"properties": {
-						"tabGroup": {
-							"type": "number",
-							"description": "The index of the tab group to check. This is optional- if not specified, the active tab group will be checked.",
-							"default": 0
+						"project": {
+							"type": "string",
+							"description": "The project name"
+						},
+						"expId": {
+							"type": "string",
+							"description": "The experiment CUID"
+						},
+						"workspace": {
+							"type": "string",
+							"description": "The workspace name. If not specified, the current user's personal workspace will be used."
 						}
-					}
+					},
+					"required": ["project", "expId"]
 				}
 			},
 			{
@@ -153,18 +173,34 @@
 				],
 				"toolReferenceName": "GetMetrics",
 				"displayName": "GetMetrics",
-				"modelDescription": "Obtain the value of a SwanLab experimental metric",
+				"modelDescription": "Obtain metric values of a SwanLab experiment",
 				"canBeReferencedInPrompt": true,
-				"icon": "$(files)",
+				"icon": "$(pulse)",
 				"inputSchema": {
 					"type": "object",
 					"properties": {
-						"tabGroup": {
-							"type": "number",
-							"description": "The index of the tab group to check. This is optional- if not specified, the active tab group will be checked.",
-							"default": 0
+						"expId": {
+							"type": "string",
+							"description": "The experiment CUID"
+						},
+						"keys": {
+							"oneOf": [
+								{
+									"type": "string",
+									"description": "A single metric key"
+								},
+								{
+									"type": "array",
+									"items": {
+										"type": "string"
+									},
+									"description": "An array of metric keys"
+								}
+							],
+							"description": "The metric key(s) to retrieve"
 						}
-					}
+					},
+					"required": ["expId", "keys"]
 				}
 			},
 			{
@@ -177,16 +213,24 @@
 				"displayName": "DeleteExperiment",
 				"modelDescription": "Delete a SwanLab experiment",
 				"canBeReferencedInPrompt": true,
-				"icon": "$(files)",
+				"icon": "$(trash)",
 				"inputSchema": {
 					"type": "object",
 					"properties": {
-						"tabGroup": {
-							"type": "number",
-							"description": "The index of the tab group to check. This is optional- if not specified, the active tab group will be checked.",
-							"default": 0
+						"project": {
+							"type": "string",
+							"description": "The project name"
+						},
+						"expId": {
+							"type": "string",
+							"description": "The experiment CUID"
+						},
+						"workspace": {
+							"type": "string",
+							"description": "The workspace name. If not specified, the current user's personal workspace will be used."
 						}
-					}
+					},
+					"required": ["project", "expId"]
 				}
 			}
 		],
