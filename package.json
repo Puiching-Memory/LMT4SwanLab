@@ -30,14 +30,6 @@
 				"canBeReferencedInPrompt": true,
 				"icon": "$(files)",
 				"inputSchema": {
-					"type": "object",
-					"properties": {
-						"tabGroup": {
-							"type": "number",
-							"description": "The index of the tab group to check. This is optional- if not specified, the active tab group will be checked.",
-							"default": 0
-						}
-					}
 				}
 			},
 			{
@@ -54,10 +46,9 @@
 				"inputSchema": {
 					"type": "object",
 					"properties": {
-						"tabGroup": {
-							"type": "number",
-							"description": "The index of the tab group to check. This is optional- if not specified, the active tab group will be checked.",
-							"default": 0
+						"workspace": {
+							"type": "string",
+							"description": "The workspace name. If not specified, the current user's personal workspace will be used."
 						}
 					}
 				}
@@ -76,12 +67,16 @@
 				"inputSchema": {
 					"type": "object",
 					"properties": {
-						"tabGroup": {
-							"type": "number",
-							"description": "The index of the tab group to check. This is optional- if not specified, the active tab group will be checked.",
-							"default": 0
+						"project": {
+							"type": "string",
+							"description": "The name of the project to delete"
+						},
+						"workspace": {
+							"type": "string",
+							"description": "The workspace name. If not specified, the current user's personal workspace will be used."
 						}
-					}
+					},
+					"required": ["project"]
 				}
 			},
 			{
