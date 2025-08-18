@@ -1,7 +1,11 @@
 import * as vscode from 'vscode';
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
 
-// Utility functions for error handling
+/**
+ * Handle Axios errors and convert them to more user-friendly errors
+ * @param error - The error object
+ * @returns never (always throws an error)
+ */
 function handleAxiosError(error: any): never {
     if (axios.isAxiosError(error)) {
         const status = error.response?.status;
@@ -19,6 +23,11 @@ function handleAxiosError(error: any): never {
     throw new Error(`Unexpected error: ${error instanceof Error ? error.message : String(error)}`);
 }
 
+/**
+ * Handle API response and check for errors
+ * @param response - The Axios response object
+ * @returns The data from the response
+ */
 function handleApiResponse<T>(response: AxiosResponse<ApiResponse<T>>): T {
     if (response.data.errmsg) {
         throw new Error(response.data.errmsg);
@@ -32,21 +41,27 @@ function handleApiResponse<T>(response: AxiosResponse<ApiResponse<T>>): T {
     return response.data.data;
 }
 
-// API 响应类型定义
+/**
+ * Generic API response structure
+ */
 interface ApiResponse<T> {
     code: number;
     errmsg: string;
     data: T;
 }
 
-// 工作空间类型定义
+/**
+ * Workspace information structure
+ */
 export interface Workspace {
     name: string;
     username: string;
     role: string;
 }
 
-// 项目类型定义
+/**
+ * Project information structure
+ */
 export interface Project {
     cuid: string;
     name: string;
@@ -68,7 +83,9 @@ export interface Project {
     };
 }
 
-// 实验类型定义
+/**
+ * Experiment information structure
+ */
 export interface Experiment {
     cuid: string;
     name: string;
@@ -102,7 +119,9 @@ export interface Experiment {
     rootProId: string | null;
 }
 
-// 实验Summary类型定义
+/**
+ * Summary information structure for experiments
+ */
 export interface Summary {
     [key: string]: {
         step: number;
@@ -118,16 +137,23 @@ export interface Summary {
     };
 }
 
-// 实验Metrics类型定义
+/**
+ * Metric data structure
+ */
 export interface Metric {
     [key: string]: number | null;
 }
 
+/**
+ * Metrics data structure
+ */
 export interface MetricsData {
     [key: string]: Metric[];
 }
 
-// 分组列表响应类型
+/**
+ * Group list response structure
+ */
 interface GroupListResponse {
     list: Array<{
         name: string;
@@ -137,7 +163,9 @@ interface GroupListResponse {
     total: number;
 }
 
-// 项目列表响应类型（实际API响应结构）
+/**
+ * Project list response structure
+ */
 interface ProjectListResponse {
     size: number;
     total: number;
@@ -164,7 +192,9 @@ interface ProjectListResponse {
     }>;
 }
 
-// 实验列表响应类型
+/**
+ * Experiment list response structure
+ */
 interface ExperimentListResponse {
     size: number;
     total: number;
@@ -172,12 +202,16 @@ interface ExperimentListResponse {
     list: Experiment[];
 }
 
-// 删除项目响应类型
+/**
+ * Delete project response structure
+ */
 interface DeleteProjectResponse {
     message: string;
 }
 
-// 登录响应数据类型
+/**
+ * Login response data structure
+ */
 interface LoginResponseData {
     sid: string;
     expiredAt: string;
@@ -186,7 +220,9 @@ interface LoginResponseData {
     };
 }
 
-// 登录信息类型
+/**
+ * Login information structure
+ */
 interface LoginInfo {
     sid: string | null;
     expiredAt: string | null;
@@ -196,11 +232,18 @@ interface LoginInfo {
     apiKey: string | null;
 }
 
+/**
+ * SwanLab API client for interacting with the SwanLab backend
+ */
 export class SwanLabApi {
     private axiosInstance: AxiosInstance;
     private loginInfo: LoginInfo | null = null;
     private apiKey: string;
 
+    /**
+     * Create a new SwanLab API client
+     * @param apiKey - The API key for authentication
+     */
     constructor(apiKey: string) {
         this.apiKey = apiKey;
         this.axiosInstance = axios.create({
@@ -210,7 +253,7 @@ export class SwanLabApi {
             },
         });
 
-        // 添加响应拦截器处理错误
+        // Add response interceptor for error handling
         this.axiosInstance.interceptors.response.use(
             (response: AxiosResponse) => response,
             (error: AxiosError) => {
@@ -219,9 +262,11 @@ export class SwanLabApi {
         );
     }
 
+    // ==================== Login Methods ====================
+
     /**
-     * 用户登录认证
-     * 对应Python SDK中的login_by_key方法
+     * Authenticate user with API key
+     * Corresponds to login_by_key method in Python SDK
      */
     async login(): Promise<void> {
         try {
@@ -248,7 +293,7 @@ export class SwanLabApi {
                 apiKey: this.apiKey
             };
 
-            // 设置认证头
+            // Set authentication headers
             this.axiosInstance.defaults.headers.common['Cookie'] = `sid=${response.data.sid}`;
             this.axiosInstance.defaults.baseURL = this.loginInfo.apiHost;
         } catch (error) {
@@ -256,8 +301,11 @@ export class SwanLabApi {
         }
     }
 
+    // ==================== Workspace Methods ====================
+
     /**
-     * 获取工作空间列表
+     * Get list of workspaces
+     * @returns Array of workspace objects
      */
     async listWorkspaces(): Promise<Workspace[]> {
         if (!this.loginInfo) {
@@ -282,9 +330,14 @@ export class SwanLabApi {
         }
     }
 
+    // ==================== Project Methods ====================
+
     /**
-     * 获取项目列表
-     * 对应Python SDK中的OpenApi.list_projects方法
+     * Get list of projects
+     * Corresponds to OpenApi.list_projects method in Python SDK
+     * @param username - Username or workspace name (optional)
+     * @param detail - Whether to include detailed information (default: true)
+     * @returns Array of project objects
      */
     async listProjects(username: string = "", detail: boolean = true): Promise<Project[]> {
         if (!this.loginInfo) {
@@ -299,7 +352,6 @@ export class SwanLabApi {
             const targetUsername = username || this.loginInfo!.username || "";
 
             while (true) {
-                const url = `/project/${targetUsername}`;
                 const response: AxiosResponse<ProjectListResponse> = await this.axiosInstance.get(
                     `/project/${targetUsername}`,
                     {
@@ -352,10 +404,10 @@ export class SwanLabApi {
     }
 
     /**
-     * 删除项目
-     * 对应Python SDK中的OpenApi.delete_project方法
-     * @param project 项目名
-     * @param username 工作空间名，默认为当前用户个人空间
+     * Delete a project
+     * Corresponds to OpenApi.delete_project method in Python SDK
+     * @param project - Project name
+     * @param username - Username or workspace name (optional)
      */
     async deleteProject(project: string, username?: string): Promise<void> {
         if (!this.loginInfo) {
@@ -363,7 +415,7 @@ export class SwanLabApi {
         }
 
         try {
-            // 如果未提供username，则使用当前登录用户的username
+            // If username is not provided, use the logged in user's username
             const targetUsername = username || this.loginInfo!.username || "";
             const url = `/project/${targetUsername}/${project}`;
 
@@ -374,11 +426,14 @@ export class SwanLabApi {
         }
     }
 
+    // ==================== Experiment Methods ====================
+
     /**
-     * 获取实验列表
-     * 对应Python SDK中的OpenApi.list_experiments方法
-     * @param project 项目名
-     * @param username 工作空间名，默认为当前用户个人空间
+     * Get list of experiments in a project
+     * Corresponds to OpenApi.list_experiments method in Python SDK
+     * @param project - Project name
+     * @param username - Username or workspace name (optional)
+     * @returns Array of experiment objects
      */
     async listExperiments(project: string, username?: string): Promise<Experiment[]> {
         if (!this.loginInfo) {
@@ -386,9 +441,9 @@ export class SwanLabApi {
         }
 
         try {
-            // 如果未提供username，则使用当前登录用户的username
+            // If username is not provided, use the logged in user's username
             const targetUsername = username || this.loginInfo!.username || "";
-            // 根据Python SDK，正确的路径应该是 /project/{username}/{project}/runs
+            // According to Python SDK, the correct path should be /project/{username}/{project}/runs
             const url = `/project/${targetUsername}/${project}/runs`;
 
             const allExperiments: Experiment[] = [];
@@ -427,11 +482,12 @@ export class SwanLabApi {
     }
 
     /**
-     * 获取实验详情
-     * 对应Python SDK中的OpenApi.get_experiment方法
-     * @param project 项目名
-     * @param expId 实验CUID
-     * @param username 工作空间名，默认为当前用户个人空间
+     * Get detailed information about an experiment
+     * Corresponds to OpenApi.get_experiment method in Python SDK
+     * @param project - Project name
+     * @param expId - Experiment CUID
+     * @param username - Username or workspace name (optional)
+     * @returns Experiment object
      */
     async getExperiment(project: string, expId: string, username?: string): Promise<Experiment> {
         if (!this.loginInfo) {
@@ -439,22 +495,22 @@ export class SwanLabApi {
         }
 
         try {
-            // 如果未提供username，则使用当前登录用户的username
+            // If username is not provided, use the logged in user's username
             const targetUsername = username || this.loginInfo!.username || "";
-            // 根据Python SDK，正确的路径应该是 /project/{username}/{project}/runs/{exp_id}
+            // According to Python SDK, the correct path should be /project/{username}/{project}/runs/{exp_id}
             const url = `/project/${targetUsername}/${project}/runs/${expId}`;
 
             const response: AxiosResponse<any> = await this.axiosInstance.get(url);
 
-            // 检查响应数据是否存在
+            // Check if response data exists
             if (!response.data) {
                 throw new Error('Empty response data received from API');
             }
 
-            // 解析实验数据
+            // Parse experiment data
             const experimentData = response.data;
 
-            // 构建实验对象，确保所有字段都有默认值
+            // Build experiment object, ensuring all fields have default values
             const experiment: Experiment = {
                 cuid: experimentData.cuid ?? "",
                 name: experimentData.name ?? "",
@@ -494,11 +550,12 @@ export class SwanLabApi {
     }
 
     /**
-     * 获取实验Summary信息
-     * 对应Python SDK中的OpenApi.get_summary方法
-     * @param project 项目名
-     * @param expId 实验CUID
-     * @param username 工作空间名，默认为当前用户个人空间
+     * Get summary information for an experiment
+     * Corresponds to OpenApi.get_summary method in Python SDK
+     * @param project - Project name
+     * @param expId - Experiment CUID
+     * @param username - Username or workspace name (optional)
+     * @returns Summary object
      */
     async getSummary(project: string, expId: string, username?: string): Promise<Summary> {
         if (!this.loginInfo) {
@@ -506,10 +563,10 @@ export class SwanLabApi {
         }
 
         try {
-            // 如果未提供username，则使用当前登录用户的username
+            // If username is not provided, use the logged in user's username
             const targetUsername = username || this.loginInfo!.username || "";
 
-            // 首先获取项目信息以获得项目CUID
+            // First get project information to get project CUID
             const projectUrl = `/project/${targetUsername}/${project}`;
             const projectResponse: AxiosResponse<any> = await this.axiosInstance.get(projectUrl);
 
@@ -519,7 +576,7 @@ export class SwanLabApi {
 
             const projectCuid = projectResponse.data.cuid || "";
 
-            // 获取实验信息以获得rootExpId和rootProId
+            // Get experiment information to get rootExpId and rootProId
             const expUrl = `/project/${targetUsername}/${project}/runs/${expId}`;
             const expResponse: AxiosResponse<any> = await this.axiosInstance.get(expUrl);
 
@@ -530,13 +587,13 @@ export class SwanLabApi {
             const rootExpId = expResponse.data.rootExpId || "";
             const rootProId = expResponse.data.rootProId || "";
 
-            // 构造请求数据
+            // Construct request data
             const requestData = {
                 experimentId: expId,
                 projectId: projectCuid,
             };
 
-            // 如果是克隆实验，添加额外的参数
+            // If it's a cloned experiment, add extra parameters
             if (rootExpId && rootProId) {
                 Object.assign(requestData, {
                     rootExperimentId: rootExpId,
@@ -544,7 +601,7 @@ export class SwanLabApi {
                 });
             }
 
-            // 发送请求获取summary数据
+            // Send request to get summary data
             const summaryResponse: AxiosResponse<any> = await this.axiosInstance.post(
                 "/house/metrics/summaries",
                 [requestData],
@@ -553,11 +610,11 @@ export class SwanLabApi {
             
             const data = handleApiResponse(summaryResponse);
 
-            // 解析summary数据
+            // Parse summary data
             const firstDataKey = Object.keys(summaryResponse.data)[0];
             const rawData = summaryResponse.data[firstDataKey];
 
-            // 格式化数据
+            // Format data
             const summary: Summary = {};
             for (const [key, value] of Object.entries(rawData)) {
                 summary[key] = {
@@ -584,10 +641,11 @@ export class SwanLabApi {
     }
 
     /**
-     * 获取实验指标数据
-     * 对应Python SDK中的OpenApi.get_metrics方法
-     * @param expId 实验CUID
-     * @param keys 指标key, 单个字符串或字符串数组
+     * Get metrics data for an experiment
+     * Corresponds to OpenApi.get_metrics method in Python SDK
+     * @param expId - Experiment CUID
+     * @param keys - Metric key(s), single string or array of strings
+     * @returns Metrics data object
      */
     async getMetrics(expId: string, keys: string | string[]): Promise<MetricsData> {
         if (!this.loginInfo) {
@@ -595,15 +653,15 @@ export class SwanLabApi {
         }
 
         try {
-            // 确保keys是数组格式
+            // Ensure keys is an array
             const keysArray = Array.isArray(keys) ? keys : [keys];
             
-            // 去重keys
+            // Deduplicate keys
             const uniqueKeys = [...new Set(keysArray)];
             
             const metricsData: MetricsData = {};
             
-            // 逐个获取每个key的数据
+            // Get data for each key
             for (const key of uniqueKeys) {
                 try {
                     const response: AxiosResponse<any> = await this.axiosInstance.get(
@@ -613,20 +671,20 @@ export class SwanLabApi {
                         }
                     );
                     
-                    // 检查响应是否存在以及是否有数据
+                    // Check if response exists and has data
                     if (!response || !response.data) {
                         console.warn(`Empty response for key ${key}`);
                         continue;
                     }
                     
-                    // 检查是否有错误信息
+                    // Check for error messages
                     if (response.data.errmsg) {
                         console.warn(`Error getting metrics for key ${key}:`, response.data.errmsg);
                         continue;
                     }
                     
-                    // 根据实际API响应结构获取URL
-                    // 实际响应结构: { url: '...' }
+                    // Get URL from actual API response structure
+                    // Actual response structure: { url: '...' }
                     const url = response.data.url;
                     
                     if (!url) {
@@ -634,21 +692,21 @@ export class SwanLabApi {
                         continue;
                     }
                     
-                    // 获取CSV数据
+                    // Get CSV data
                     const csvResponse = await axios.get(url);
                     const csvData = csvResponse.data;
                     
-                    // 简单解析CSV数据
+                    // Simple CSV parsing
                     const lines = csvData.trim().split('\n');
                     if (lines.length < 2) {
                         console.warn(`Invalid CSV data for key ${key}`);
                         continue;
                     }
                     
-                    // 解析表头
+                    // Parse headers
                     const headers = lines[0].split(',').map((h: string) => h.trim());
                     
-                    // 解析数据行
+                    // Parse data rows
                     const dataRows: Metric[] = [];
                     for (let i = 1; i < lines.length; i++) {
                         const values = lines[i].split(',').map((v: string) => v.trim());
@@ -658,7 +716,7 @@ export class SwanLabApi {
                             const header = headers[j];
                             const value = values[j];
                             
-                            // 尝试转换为数字，如果失败则保持为字符串
+                            // Try to convert to number, if failed keep as string
                             row[header] = (value === '' || value === 'null' || value === 'undefined') 
                                 ? null 
                                 : isNaN(Number(value)) ? value : Number(value);
@@ -684,11 +742,11 @@ export class SwanLabApi {
     }
 
     /**
-     * 删除实验
-     * 对应Python SDK中的OpenApi.delete_experiment方法
-     * @param project 项目名
-     * @param expId 实验CUID
-     * @param username 工作空间名，默认为当前用户个人空间
+     * Delete an experiment
+     * Corresponds to OpenApi.delete_experiment method in Python SDK
+     * @param project - Project name
+     * @param expId - Experiment CUID
+     * @param username - Username or workspace name (optional)
      */
     async deleteExperiment(project: string, expId: string, username?: string): Promise<void> {
         if (!this.loginInfo) {
@@ -696,10 +754,10 @@ export class SwanLabApi {
         }
 
         try {
-            // 如果未提供username，则使用当前登录用户的username
+            // If username is not provided, use the logged in user's username
             const targetUsername = username || this.loginInfo!.username || "";
             
-            // 根据Python SDK，正确的路径应该是 /project/{username}/{project}/runs/{exp_id}
+            // According to Python SDK, the correct path should be /project/{username}/{project}/runs/{exp_id}
             const url = `/project/${targetUsername}/${project}/runs/${expId}`;
 
             const response: AxiosResponse<any> = await this.axiosInstance.delete(url);
