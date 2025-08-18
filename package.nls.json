@@ -1,6 +1,6 @@
 {
   "displayName": "LMT4SwanLab",
-  "description": "A language model tool for SwanLab",
+  "description": "A vscode plugin that provides agents with the ability to access the swanlab API",
   "tool.listWorkspaces.name": "List Workspaces",
   "tool.listWorkspaces.description": "List all workspaces of the current SwanLab user",
   "tool.listProjects.name": "List Projects",
@@ -16,5 +16,7 @@
   "tool.deleteExperiment.name": "Delete Experiment",
   "tool.deleteExperiment.description": "Delete an experiment",
   "tool.deleteProject.name": "Delete Project",
-  "tool.deleteProject.description": "Delete a project"
+  "tool.deleteProject.description": "Delete a project",
+  "configuration.title": "SwanLab Settings",
+  "configuration.properties.apiKey.description": "API key for SwanLab authentication"
 }

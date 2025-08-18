@@ -1,6 +1,6 @@
 {
   "displayName": "LMT4SwanLab",
-  "description": "SwanLab 的语言模型工具",
+  "description": "一个vscode插件,为agent提供访问swanlab API的能力",
   "tool.listWorkspaces.name": "列出工作空间",
   "tool.listWorkspaces.description": "列出当前 SwanLab 用户的所有工作空间",
   "tool.listProjects.name": "列出项目",
@@ -16,5 +16,7 @@
   "tool.deleteExperiment.name": "删除实验",
   "tool.deleteExperiment.description": "删除实验",
   "tool.deleteProject.name": "删除项目",
-  "tool.deleteProject.description": "删除项目"
+  "tool.deleteProject.description": "删除项目",
+  "configuration.title": "SwanLab 设置",
+  "configuration.properties.apiKey.description": "用于 SwanLab 身份验证的 API 密钥"
 }
