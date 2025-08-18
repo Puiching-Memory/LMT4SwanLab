@@ -18,5 +18,10 @@
   "tool.deleteProject.name": "Delete Project",
   "tool.deleteProject.description": "Delete a project",
   "configuration.title": "SwanLab Settings",
-  "configuration.properties.apiKey.description": "API key for SwanLab authentication"
+  "configuration.properties.apiKey.description": "API key for SwanLab authentication",
+  "message.projectDeleted": "Project deleted successfully",
+  "message.experimentDeleted": "Experiment deleted successfully",
+  "format.workspace": "Workspace: {0}",
+  "format.project": "Project: {0}",
+  "format.experiment": "Experiment: {0}"
 }

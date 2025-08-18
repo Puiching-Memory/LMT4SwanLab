@@ -314,9 +314,7 @@ export class SwanLabApi {
 
         try {
             const response: AxiosResponse<ApiResponse<GroupListResponse>> = await this.axiosInstance.get('/group/');
-            const data = handleApiResponse(response);
-
-            const groups = response.data.data?.list || [];
+            const groups = handleApiResponse(response).list || [];
             return groups.map(item => ({
                 name: item.name,
                 username: item.username,
@@ -507,40 +505,35 @@ export class SwanLabApi {
                 throw new Error('Empty response data received from API');
             }
 
-            // Parse experiment data
-            const experimentData = response.data;
-
-            // Build experiment object, ensuring all fields have default values
-            const experiment: Experiment = {
-                cuid: experimentData.cuid ?? "",
-                name: experimentData.name ?? "",
-                description: experimentData.description ?? "",
-                state: experimentData.state ?? "",
-                show: Boolean(experimentData.show),
-                createdAt: experimentData.createdAt ?? "",
-                finishedAt: experimentData.finishedAt ?? null,
+            const data = response.data;
+            return {
+                cuid: data.cuid ?? "",
+                name: data.name ?? "",
+                description: data.description ?? "",
+                state: data.state ?? "",
+                show: Boolean(data.show),
+                createdAt: data.createdAt ?? "",
+                finishedAt: data.finishedAt ?? null,
                 user: {
-                    username: experimentData.user?.username ?? "",
-                    name: experimentData.user?.name ?? "",
-                    avatar: experimentData.user?.avatar ?? undefined
+                    username: data.user?.username ?? "",
+                    name: data.user?.name ?? "",
+                    avatar: data.user?.avatar ?? undefined
                 },
                 profile: {
-                    config: experimentData.profile?.config ?? {},
-                    metadata: experimentData.profile?.metadata ?? {},
-                    requirements: experimentData.profile?.requirements ?? undefined,
-                    conda: experimentData.profile?.conda ?? null
+                    config: data.profile?.config ?? {},
+                    metadata: data.profile?.metadata ?? {},
+                    requirements: data.profile?.requirements ?? undefined,
+                    conda: data.profile?.conda ?? null
                 },
-                type: experimentData.type ?? "",
-                colors: Array.isArray(experimentData.colors) ? experimentData.colors : [],
-                labels: Array.isArray(experimentData.labels) ? experimentData.labels : [],
-                tags: Array.isArray(experimentData.tags) ? experimentData.tags : [],
-                sectionIndex: Array.isArray(experimentData.sectionIndex) ? experimentData.sectionIndex : [],
-                cloneType: experimentData.cloneType ?? null,
-                rootExpId: experimentData.rootExpId ?? null,
-                rootProId: experimentData.rootProId ?? null
+                type: data.type ?? "",
+                colors: Array.isArray(data.colors) ? data.colors : [],
+                labels: Array.isArray(data.labels) ? data.labels : [],
+                tags: Array.isArray(data.tags) ? data.tags : [],
+                sectionIndex: Array.isArray(data.sectionIndex) ? data.sectionIndex : [],
+                cloneType: data.cloneType ?? null,
+                rootExpId: data.rootExpId ?? null,
+                rootProId: data.rootProId ?? null
             };
-
-            return experiment;
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 throw new Error(`Network error: ${error.message}`);
@@ -610,13 +603,10 @@ export class SwanLabApi {
             
             const data = handleApiResponse(summaryResponse);
 
-            // Parse summary data
             const firstDataKey = Object.keys(summaryResponse.data)[0];
             const rawData = summaryResponse.data[firstDataKey];
 
-            // Format data
-            const summary: Summary = {};
-            for (const [key, value] of Object.entries(rawData)) {
+            return Object.entries(rawData).reduce<Summary>((summary, [key, value]) => {
                 summary[key] = {
                     step: (value as any).step,
                     value: (value as any).value,
@@ -629,9 +619,8 @@ export class SwanLabApi {
                         value: (value as any).max?.data,
                     }
                 };
-            }
-
-            return summary;
+                return summary;
+            }, {});
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 throw new Error(`Network error: ${error.message}`);

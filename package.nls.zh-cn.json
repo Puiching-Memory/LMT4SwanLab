@@ -18,5 +18,10 @@
   "tool.deleteProject.name": "删除项目",
   "tool.deleteProject.description": "删除项目",
   "configuration.title": "SwanLab 设置",
-  "configuration.properties.apiKey.description": "用于 SwanLab 身份验证的 API 密钥"
+  "configuration.properties.apiKey.description": "用于 SwanLab 身份验证的 API 密钥",
+  "message.projectDeleted": "项目删除成功",
+  "message.experimentDeleted": "实验删除成功",
+  "format.workspace": "工作空间: {0}",
+  "format.project": "项目: {0}",
+  "format.experiment": "实验: {0}"
 }

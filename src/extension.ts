@@ -161,14 +161,12 @@ export function activate(context: vscode.ExtensionContext) {
  */
 class SwanLabListWorkspacesTool extends ListTool<Workspace> {
     protected async prepare(_options: vscode.LanguageModelToolInvocationPrepareOptions<any>) {
-        const confirmationMessages = {
-            title: vscode.l10n.t('List SwanLab Workspaces'),
-            message: new vscode.MarkdownString(vscode.l10n.t('List all workspaces of the current SwanLab user'))
-        };
-
         return {
             invocationMessage: vscode.l10n.t('List SwanLab Workspaces'),
-            confirmationMessages
+            confirmationMessages: {
+                title: vscode.l10n.t('List SwanLab Workspaces'),
+                message: new vscode.MarkdownString(vscode.l10n.t('List all workspaces of the current SwanLab user'))
+            }
         };
     }
 
@@ -177,7 +175,7 @@ class SwanLabListWorkspacesTool extends ListTool<Workspace> {
     }
 
     protected formatItem(item: Workspace): string {
-        return vscode.l10n.t("Workspace: {0}", item.name);
+        return vscode.l10n.t("format.workspace", item.name);
     }
 }
 
@@ -188,14 +186,12 @@ class SwanLabListWorkspacesTool extends ListTool<Workspace> {
  */
 class SwanLabListProjectsTool extends ListTool<Project> {
     protected async prepare(_options: vscode.LanguageModelToolInvocationPrepareOptions<any>) {
-        const confirmationMessages = {
-            title: vscode.l10n.t('List SwanLab Projects'),
-            message: new vscode.MarkdownString(vscode.l10n.t('List all projects in a workspace'))
-        };
-
         return {
             invocationMessage: vscode.l10n.t('List SwanLab Projects'),
-            confirmationMessages
+            confirmationMessages: {
+                title: vscode.l10n.t('List SwanLab Projects'),
+                message: new vscode.MarkdownString(vscode.l10n.t('List all projects in a workspace'))
+            }
         };
     }
 
@@ -204,7 +200,7 @@ class SwanLabListProjectsTool extends ListTool<Project> {
     }
 
     protected formatItem(item: Project): string {
-        return vscode.l10n.t("Project: {0}", item.name);
+        return vscode.l10n.t("format.project", item.name);
     }
 }
 
@@ -221,20 +217,18 @@ interface IDeleteProjectParameters {
  */
 class SwanLabDeleteProjectTool extends SwanLabTool<IDeleteProjectParameters> {
     protected async prepare(_options: vscode.LanguageModelToolInvocationPrepareOptions<IDeleteProjectParameters>) {
-        const confirmationMessages = {
-            title: vscode.l10n.t('Delete SwanLab Project'),
-            message: new vscode.MarkdownString(vscode.l10n.t('Delete a project'))
-        };
-
         return {
             invocationMessage: vscode.l10n.t('Delete SwanLab Project'),
-            confirmationMessages
+            confirmationMessages: {
+                title: vscode.l10n.t('Delete SwanLab Project'),
+                message: new vscode.MarkdownString(vscode.l10n.t('Delete a project'))
+            }
         };
     }
 
     protected async execute(api: SwanLabApi, input: IDeleteProjectParameters): Promise<{ message: string }> {
         await api.deleteProject(input.project, input.workspace);
-        return { message: "Project deleted successfully" };
+        return { message: vscode.l10n.t("message.projectDeleted") };
     }
 }
 
@@ -245,14 +239,12 @@ class SwanLabDeleteProjectTool extends SwanLabTool<IDeleteProjectParameters> {
  */
 class SwanLabListExperimentsTool extends ListTool<Experiment> {
     protected async prepare(_options: vscode.LanguageModelToolInvocationPrepareOptions<any>) {
-        const confirmationMessages = {
-            title: vscode.l10n.t('List SwanLab Experiments'),
-            message: new vscode.MarkdownString(vscode.l10n.t('List all experiments in a project'))
-        };
-
         return {
             invocationMessage: vscode.l10n.t('List SwanLab Experiments'),
-            confirmationMessages
+            confirmationMessages: {
+                title: vscode.l10n.t('List SwanLab Experiments'),
+                message: new vscode.MarkdownString(vscode.l10n.t('List all experiments in a project'))
+            }
         };
     }
 
@@ -261,9 +253,11 @@ class SwanLabListExperimentsTool extends ListTool<Experiment> {
     }
 
     protected formatItem(item: Experiment): string {
-        return vscode.l10n.t("Experiment: {0}", item.name);
+        return vscode.l10n.t("format.experiment", item.name);
     }
 }
+
+// ==================== Get Experiment Tools ====================
 
 /**
  * Parameters for GetExperiment tool
@@ -279,14 +273,12 @@ interface IGetExperimentParameters {
  */
 class SwanLabGetExperimentTool extends SwanLabTool<IGetExperimentParameters> {
     protected async prepare(_options: vscode.LanguageModelToolInvocationPrepareOptions<IGetExperimentParameters>) {
-        const confirmationMessages = {
-            title: vscode.l10n.t('Get SwanLab Experiment'),
-            message: new vscode.MarkdownString(vscode.l10n.t('Get detailed information about an experiment'))
-        };
-
         return {
             invocationMessage: vscode.l10n.t('Get SwanLab Experiment'),
-            confirmationMessages
+            confirmationMessages: {
+                title: vscode.l10n.t('Get SwanLab Experiment'),
+                message: new vscode.MarkdownString(vscode.l10n.t('Get detailed information about an experiment'))
+            }
         };
     }
 
@@ -309,14 +301,12 @@ interface IGetSummaryParameters {
  */
 class SwanLabGetSummaryTool extends SwanLabTool<IGetSummaryParameters> {
     protected async prepare(_options: vscode.LanguageModelToolInvocationPrepareOptions<IGetSummaryParameters>) {
-        const confirmationMessages = {
-            title: vscode.l10n.t('Get SwanLab Summary'),
-            message: new vscode.MarkdownString(vscode.l10n.t('Get summary information of an experiment'))
-        };
-
         return {
             invocationMessage: vscode.l10n.t('Get SwanLab Summary'),
-            confirmationMessages
+            confirmationMessages: {
+                title: vscode.l10n.t('Get SwanLab Summary'),
+                message: new vscode.MarkdownString(vscode.l10n.t('Get summary information of an experiment'))
+            }
         };
     }
 
@@ -338,14 +328,12 @@ interface IGetMetricsParameters {
  */
 class SwanLabGetMetricsTool extends SwanLabTool<IGetMetricsParameters> {
     protected async prepare(_options: vscode.LanguageModelToolInvocationPrepareOptions<IGetMetricsParameters>) {
-        const confirmationMessages = {
-            title: vscode.l10n.t('Get SwanLab Metrics'),
-            message: new vscode.MarkdownString(vscode.l10n.t('Get metrics data of an experiment'))
-        };
-
         return {
             invocationMessage: vscode.l10n.t('Get SwanLab Metrics'),
-            confirmationMessages
+            confirmationMessages: {
+                title: vscode.l10n.t('Get SwanLab Metrics'),
+                message: new vscode.MarkdownString(vscode.l10n.t('Get metrics data of an experiment'))
+            }
         };
     }
 
@@ -368,20 +356,18 @@ interface IDeleteExperimentParameters {
  */
 class SwanLabDeleteExperimentTool extends SwanLabTool<IDeleteExperimentParameters> {
     protected async prepare(_options: vscode.LanguageModelToolInvocationPrepareOptions<IDeleteExperimentParameters>) {
-        const confirmationMessages = {
-            title: vscode.l10n.t('Delete SwanLab Experiment'),
-            message: new vscode.MarkdownString(vscode.l10n.t('Delete an experiment'))
-        };
-
         return {
             invocationMessage: vscode.l10n.t('Delete SwanLab Experiment'),
-            confirmationMessages
+            confirmationMessages: {
+                title: vscode.l10n.t('Delete SwanLab Experiment'),
+                message: new vscode.MarkdownString(vscode.l10n.t('Delete an experiment'))
+            }
         };
     }
 
     protected async execute(api: SwanLabApi, input: IDeleteExperimentParameters): Promise<{ message: string }> {
         await api.deleteExperiment(input.project, input.expId, input.workspace);
-        return { message: "Experiment deleted successfully" };
+        return { message: vscode.l10n.t("message.experimentDeleted") };
     }
 }
 

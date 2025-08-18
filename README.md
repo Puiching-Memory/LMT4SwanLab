@@ -13,6 +13,9 @@ The vscode plugin provides Agents with the ability to access the swanlab API
 | get_metrics       | Experiment | 获取一个实验指标的值                                            |
 | delete_experiment | Experiment | 删除一个实验                                                    |
 
+## Usage
+1. Add your [SwanLab API Key](https://swanlab.cn/space/~/settings) at vscode settings
+
 ## python env dev
 ```bash
 conda create -n swanlab python=3.13
