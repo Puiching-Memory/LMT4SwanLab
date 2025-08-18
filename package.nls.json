@@ -17,11 +17,13 @@
   "tool.deleteExperiment.description": "Delete an experiment",
   "tool.deleteProject.name": "Delete Project",
   "tool.deleteProject.description": "Delete a project",
-  "configuration.title": "SwanLab Settings",
-  "configuration.properties.apiKey.description": "API key for SwanLab authentication",
-  "message.projectDeleted": "Project deleted successfully",
-  "message.experimentDeleted": "Experiment deleted successfully",
-  "format.workspace": "Workspace: {0}",
-  "format.project": "Project: {0}",
-  "format.experiment": "Experiment: {0}"
+  "command.setApiKey.title": "SwanLab: Set API Key",
+  "command.setApiKey.description": "Set the SwanLab API key for authentication",
+  "command.clearApiKey.title": "SwanLab: Clear API Key",
+  "command.clearApiKey.description": "Clear the stored SwanLab API key",
+  "message.apiKeyStored": "SwanLab API Key stored securely",
+  "message.noApiKeyConfigured": "No SwanLab API Key is currently configured",
+  "message.confirmClearApiKey": "Are you sure you want to clear the stored SwanLab API Key?",
+  "message.apiKeyCleared": "SwanLab API Key has been cleared",
+  "message.apiKeyNotConfigured": "SwanLab API key not configured. Please set your API key using the 'SwanLab: Set API Key' command."
 }

@@ -14,7 +14,10 @@ The vscode plugin provides Agents with the ability to access the swanlab API
 | delete_experiment | Experiment | 删除一个实验                                                    |
 
 ## Usage
-1. Add your [SwanLab API Key](https://swanlab.cn/space/~/settings) at vscode settings
+1. Press Ctrl + Shift + P, run "SwanLab: Set API Key", and enter your API key.
+2. Enjoy your chat with the agent!
+
+* you can find your API key in the [SwanLab settings](https://swanlab.cn/space/~/settings).
 
 ## python env dev
 ```bash

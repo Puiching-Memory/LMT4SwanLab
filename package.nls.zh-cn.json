@@ -17,11 +17,20 @@
   "tool.deleteExperiment.description": "删除实验",
   "tool.deleteProject.name": "删除项目",
   "tool.deleteProject.description": "删除项目",
+  "command.setApiKey.title": "SwanLab: 设置 API 密钥",
+  "command.setApiKey.description": "设置 SwanLab API 密钥用于身份验证",
+  "command.clearApiKey.title": "SwanLab: 清除 API 密钥",
+  "command.clearApiKey.description": "清除已存储的 SwanLab API 密钥",
   "configuration.title": "SwanLab 设置",
   "configuration.properties.apiKey.description": "用于 SwanLab 身份验证的 API 密钥",
   "message.projectDeleted": "项目删除成功",
   "message.experimentDeleted": "实验删除成功",
   "format.workspace": "工作空间: {0}",
   "format.project": "项目: {0}",
-  "format.experiment": "实验: {0}"
+  "format.experiment": "实验: {0}",
+  "message.apiKeyStored": "SwanLab API 密钥已安全存储",
+  "message.noApiKeyConfigured": "当前未配置 SwanLab API 密钥",
+  "message.confirmClearApiKey": "您确定要清除已存储的 SwanLab API 密钥吗？",
+  "message.apiKeyCleared": "SwanLab API 密钥已清除",
+  "message.apiKeyNotConfigured": "SwanLab API 密钥未配置。请使用 'SwanLab: 设置 API 密钥' 命令设置您的 API 密钥。"
 }

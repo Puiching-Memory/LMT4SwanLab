@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
+import axios, { AxiosInstance, AxiosResponse, AxiosError, AxiosHeaders } from 'axios';
 
 /**
  * Handle Axios errors and convert them to more user-friendly errors
@@ -10,17 +10,17 @@ function handleAxiosError(error: any): never {
     if (axios.isAxiosError(error)) {
         const status = error.response?.status;
         if (status === 401) {
-            throw new Error('Authentication failed. Please check your API key.');
+            throw new Error(vscode.l10n.t('Authentication failed. Please check your API key.'));
         }
         if (status === 403) {
-            throw new Error('You need to be verified first');
+            throw new Error(vscode.l10n.t('You need to be verified first'));
         }
         if (status) {
-            throw new Error(`${status} ${error.response?.statusText}`);
+            throw new Error(vscode.l10n.t('{0} {1}', status, error.response?.statusText || 'Unknown error'));
         }
-        throw new Error(`Network error: ${error.message}`);
+        throw new Error(vscode.l10n.t('Network error: {0}', error.message));
     }
-    throw new Error(`Unexpected error: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(vscode.l10n.t('Unexpected error: {0}', error instanceof Error ? error.message : String(error)));
 }
 
 /**
@@ -31,11 +31,12 @@ function handleAxiosError(error: any): never {
 function handleApiResponse<T>(response: AxiosResponse<ApiResponse<T>>): T {
     if (response.data.errmsg) {
         throw new Error(response.data.errmsg);
+// No change needed here as the error message comes from the API
     }
 
     if (response.data.code < 200 || response.data.code >= 300) {
         const traceId = response.headers['traceid'] || 'unknown';
-        throw new Error(`API error: ${response.statusText}. Trace id: ${traceId}`);
+        throw new Error(vscode.l10n.t('API error: {0}. Trace id: {1}', response.statusText, traceId));
     }
 
     return response.data.data;
@@ -239,6 +240,7 @@ export class SwanLabApi {
     private axiosInstance: AxiosInstance;
     private loginInfo: LoginInfo | null = null;
     private apiKey: string;
+    private isLoggingIn: boolean = false;
 
     /**
      * Create a new SwanLab API client
@@ -256,7 +258,25 @@ export class SwanLabApi {
         // Add response interceptor for error handling
         this.axiosInstance.interceptors.response.use(
             (response: AxiosResponse) => response,
-            (error: AxiosError) => {
+            async (error: AxiosError) => {
+                // If we get a 401 and we're not already logging in, try to login again
+                if (error.response?.status === 401 && !this.isLoggingIn) {
+                    try {
+                        await this.login();
+                        // Retry the original request with new authentication
+                        if (error.config) {
+                            const config = {...error.config};
+                            if (!config.headers) {
+                                config.headers = new AxiosHeaders();
+                            }
+                            config.headers.set('Cookie', `sid=${this.loginInfo?.sid}`);
+                            return this.axiosInstance.request(config);
+                        }
+                    } catch (loginError) {
+                        // If login fails, throw the original error
+                        throw handleAxiosError(error);
+                    }
+                }
                 throw handleAxiosError(error);
             }
         );
@@ -269,6 +289,14 @@ export class SwanLabApi {
      * Corresponds to login_by_key method in Python SDK
      */
     async login(): Promise<void> {
+        // Prevent multiple simultaneous login attempts
+        if (this.isLoggingIn) {
+            // Wait a bit and then return
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return;
+        }
+
+        this.isLoggingIn = true;
         try {
             const response: AxiosResponse<LoginResponseData> = await this.axiosInstance.post(
                 'https://api.swanlab.cn/api/login/api_key',
@@ -281,7 +309,7 @@ export class SwanLabApi {
             );
 
             if (response.status !== 200) {
-                throw new Error(`Login failed with status ${response.status}: ${response.statusText}`);
+                throw new Error(vscode.l10n.t('Login failed with status {0}: {1}', response.status, response.statusText));
             }
 
             this.loginInfo = {
@@ -298,6 +326,8 @@ export class SwanLabApi {
             this.axiosInstance.defaults.baseURL = this.loginInfo.apiHost;
         } catch (error) {
             throw handleAxiosError(error);
+        } finally {
+            this.isLoggingIn = false;
         }
     }
 
@@ -322,9 +352,9 @@ export class SwanLabApi {
             }));
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                throw new Error(`Network error: ${error.message}`);
+                throw new Error(vscode.l10n.t('Network error: {0}', error.message));
             }
-            throw new Error(`Failed to list workspaces: ${error instanceof Error ? error.message : String(error)}`);
+            throw new Error(vscode.l10n.t('Failed to list workspaces: {0}', error instanceof Error ? error.message : String(error)));
         }
     }
 
@@ -536,9 +566,9 @@ export class SwanLabApi {
             };
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                throw new Error(`Network error: ${error.message}`);
+                throw new Error(vscode.l10n.t('Network error: {0}', error.message));
             }
-            throw new Error(`Failed to get experiment: ${error instanceof Error ? error.message : String(error)}`);
+            throw new Error(vscode.l10n.t('Failed to get experiment: {0}', error instanceof Error ? error.message : String(error)));
         }
     }
 
@@ -625,7 +655,7 @@ export class SwanLabApi {
             if (axios.isAxiosError(error)) {
                 throw new Error(`Network error: ${error.message}`);
             }
-            throw new Error(`Failed to get experiment summary: ${error instanceof Error ? error.message : String(error)}`);
+            throw new Error(vscode.l10n.t('Failed to get experiment summary: {0}', error instanceof Error ? error.message : String(error)));
         }
     }
 
@@ -662,13 +692,13 @@ export class SwanLabApi {
                     
                     // Check if response exists and has data
                     if (!response || !response.data) {
-                        console.warn(`Empty response for key ${key}`);
+                        console.warn(vscode.l10n.t('Empty response for key {0}', key));
                         continue;
                     }
                     
                     // Check for error messages
                     if (response.data.errmsg) {
-                        console.warn(`Error getting metrics for key ${key}:`, response.data.errmsg);
+                        console.warn(vscode.l10n.t('Error getting metrics for key {0}: {1}', key, response.data.errmsg));
                         continue;
                     }
                     
@@ -677,7 +707,7 @@ export class SwanLabApi {
                     const url = response.data.url;
                     
                     if (!url) {
-                        console.warn(`No URL found for key ${key}. Response structure:`, JSON.stringify(response.data, null, 2));
+                        console.warn(vscode.l10n.t('No URL found for key {0}. Response structure: {1}', key, JSON.stringify(response.data, null, 2)));
                         continue;
                     }
                     
@@ -688,7 +718,7 @@ export class SwanLabApi {
                     // Simple CSV parsing
                     const lines = csvData.trim().split('\n');
                     if (lines.length < 2) {
-                        console.warn(`Invalid CSV data for key ${key}`);
+                        console.warn(vscode.l10n.t('Invalid CSV data for key {0}', key));
                         continue;
                     }
                     
@@ -716,7 +746,7 @@ export class SwanLabApi {
                     
                     metricsData[key] = dataRows;
                 } catch (error) {
-                    console.warn(`Error processing metrics for key ${key}:`, error);
+                    console.warn(vscode.l10n.t('Error processing metrics for key {0}: {1}', key, error instanceof Error ? error.message : String(error)));
                     continue;
                 }
             }
@@ -755,7 +785,7 @@ export class SwanLabApi {
             if (axios.isAxiosError(error)) {
                 throw new Error(`Network error: ${error.message}`);
             }
-            throw new Error(`Failed to delete experiment: ${error instanceof Error ? error.message : String(error)}`);
+            throw new Error(vscode.l10n.t('Failed to delete experiment: {0}', error instanceof Error ? error.message : String(error)));
         }
     }
 }

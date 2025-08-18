@@ -1,33 +1,54 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import * as l10n from '@vscode/l10n';
 import { SwanLabApi, Workspace, Project, Experiment, Summary, MetricsData } from './swanlab-api';
 
 /**
- * Get API key from VS Code configuration
- * @returns API key or undefined if not configured
+ * Securely store API key using VS Code SecretStorage
+ * @param context Extension context
+ * @param apiKey API key to store
  */
-function getApiKey(): string | undefined {
-    const config = vscode.workspace.getConfiguration('swanlab');
-    return config.get<string>('apiKey');
+async function storeApiKey(context: vscode.ExtensionContext, apiKey: string): Promise<void> {
+    await context.secrets.store('swanlab.apiKey', apiKey);
+}
+
+/**
+ * Retrieve securely stored API key
+ * @param context Extension context
+ * @returns API key or undefined if not stored
+ */
+async function retrieveApiKey(context: vscode.ExtensionContext): Promise<string | undefined> {
+    return await context.secrets.get('swanlab.apiKey');
+}
+
+/**
+ * Delete securely stored API key
+ * @param context Extension context
+ */
+async function deleteApiKey(context: vscode.ExtensionContext): Promise<void> {
+    await context.secrets.delete('swanlab.apiKey');
 }
 
 /**
  * Create SwanLab API instance
+ * @param context Extension context
  * @returns Object containing the API instance or error result
  */
-function createSwanLabApi(): { api: SwanLabApi, errorResult?: vscode.LanguageModelToolResult } {
-    const apiKey = getApiKey();
-    
+async function createSwanLabApi(context: vscode.ExtensionContext): Promise<{ api: SwanLabApi, errorResult?: vscode.LanguageModelToolResult }> {
+    // Try to get API key from secure storage first
+    let apiKey = await retrieveApiKey(context);
+
     if (!apiKey) {
-        return { 
-            api: null as any, 
+        return {
+            api: null as any,
             errorResult: new vscode.LanguageModelToolResult([
-                new vscode.LanguageModelTextPart(vscode.l10n.t("SwanLab API key not configured. Please set 'swanlab.apiKey' in your settings."))
+                new vscode.LanguageModelTextPart(vscode.l10n.t("message.apiKeyNotConfigured")),
+                new vscode.LanguageModelTextPart(vscode.l10n.t("message.pleaseSetApiKey"))
             ])
         };
     }
-    
+
     return { api: new SwanLabApi(apiKey) };
 }
 
@@ -58,8 +79,19 @@ abstract class SwanLabTool<T> implements vscode.LanguageModelTool<T> {
         options: vscode.LanguageModelToolInvocationOptions<T>,
         _token: vscode.CancellationToken
     ) {
-        const { api, errorResult } = createSwanLabApi();
+        const context = (global as any).swanlabContext as vscode.ExtensionContext;
+        const { api, errorResult } = await createSwanLabApi(context);
         if (errorResult) {
+            // Show a message box with option to set API key
+            const selection = await vscode.window.showErrorMessage(
+                "SwanLab API key not configured. Please set your API key using the 'SwanLab: Set API Key' command.",
+                "SwanLab: Set API Key"
+            );
+
+            // If user clicks "Set API Key", execute the command
+            if (selection === "SwanLab: Set API Key") {
+                await vscode.commands.executeCommand('swanlab.setApiKey');
+            }
             return errorResult;
         }
 
@@ -127,7 +159,7 @@ ${JSON.stringify(result, null, 2)}
             new vscode.LanguageModelTextPart('\n\n' + result.map(item => this.formatItem(item)).join('\n'))
         ]);
     }
-    
+
     protected abstract formatItem(item: T): string;
 }
 
@@ -136,21 +168,68 @@ ${JSON.stringify(result, null, 2)}
  * @param context - Extension context
  */
 export function activate(context: vscode.ExtensionContext) {
+    // Store context for use in tools
+    (global as any).swanlabContext = context;
+
     // Register all SwanLab tools
     context.subscriptions.push(
         // Workspace tools
         vscode.lm.registerTool('LMT4SwanLab-SwanLabListWorkspaces', new SwanLabListWorkspacesTool()),
-        
+
         // Project tools
         vscode.lm.registerTool('LMT4SwanLab-SwanLabListProjects', new SwanLabListProjectsTool()),
         vscode.lm.registerTool('LMT4SwanLab-SwanLabDeleteProject', new SwanLabDeleteProjectTool()),
-        
+
         // Experiment tools
         vscode.lm.registerTool('LMT4SwanLab-SwanLabListExperiments', new SwanLabListExperimentsTool()),
         vscode.lm.registerTool('LMT4SwanLab-SwanLabGetExperiment', new SwanLabGetExperimentTool()),
         vscode.lm.registerTool('LMT4SwanLab-SwanLabGetSummary', new SwanLabGetSummaryTool()),
         vscode.lm.registerTool('LMT4SwanLab-SwanLabGetMetrics', new SwanLabGetMetricsTool()),
         vscode.lm.registerTool('LMT4SwanLab-SwanLabDeleteExperiment', new SwanLabDeleteExperimentTool())
+    );
+
+    // Register command to securely store API key
+    context.subscriptions.push(
+        vscode.commands.registerCommand('swanlab.setApiKey', async () => {
+            const apiKey = await vscode.window.showInputBox({
+                prompt: 'Enter your SwanLab API Key',
+                password: true,
+                validateInput: (value) => {
+                    if (!value) {
+                        return 'API Key is required';
+                    }
+                    return undefined;
+                }
+            });
+
+            if (apiKey) {
+                await storeApiKey(context, apiKey);
+                vscode.window.showInformationMessage(vscode.l10n.t('message.apiKeyStored'));
+            }
+        })
+    );
+
+    // Register command to delete API key
+    context.subscriptions.push(
+        vscode.commands.registerCommand('swanlab.clearApiKey', async () => {
+            const apiKey = await retrieveApiKey(context);
+            if (!apiKey) {
+                vscode.window.showInformationMessage(vscode.l10n.t('message.noApiKeyConfigured'));
+                return;
+            }
+
+            const confirmation = await vscode.window.showWarningMessage(
+                vscode.l10n.t('message.confirmClearApiKey'),
+                { modal: true },
+                vscode.l10n.t('Yes'),
+                vscode.l10n.t('No')
+            );
+
+            if (confirmation === vscode.l10n.t('Yes')) {
+                await deleteApiKey(context);
+                vscode.window.showInformationMessage(vscode.l10n.t('message.apiKeyCleared'));
+            }
+        })
     );
 }
 

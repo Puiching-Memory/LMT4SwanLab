@@ -2,12 +2,13 @@
 	"name": "lmt4swanlab",
 	"publisher": "Puiching-Memory",
 	"displayName": "%displayName%",
+	"l10n": "./l10n",
 	"description": "%description%",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Puiching-Memory/LMT4SwanLab"
 	},
-	"version": "1.0.1",
+	"version": "1.1.0",
 	"engines": {
 		"vscode": "^1.100.0"
 	},
@@ -17,6 +18,18 @@
 	],
 	"activationEvents": [],
 	"contributes": {
+		"commands": [
+			{
+				"command": "swanlab.setApiKey",
+				"title": "%command.setApiKey.title%",
+				"description": "%command.setApiKey.description%"
+			},
+			{
+				"command": "swanlab.clearApiKey",
+				"title": "%command.clearApiKey.title%",
+				"description": "%command.clearApiKey.description%"
+			}
+		],
 		"languageModelTools": [
 			{
 				"name": "LMT4SwanLab-SwanLabListWorkspaces",
@@ -233,18 +246,7 @@
 					"required": ["project", "expId"]
 				}
 			}
-		],
-		"configuration": {
-			"type": "object",
-			"title": "%configuration.title%",
-			"properties": {
-				"swanlab.apiKey": {
-					"type": "string",
-					"description": "%configuration.properties.apiKey.description%",
-					"default": ""
-				}
-			}
-		}
+		]
 	},
 	"main": "./out/extension.js",
 	"scripts": {
