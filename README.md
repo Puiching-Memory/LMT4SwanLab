@@ -41,6 +41,6 @@ vsce publish
 ```
 
 ## reference
-https://docs.swanlab.cn/api/py-openapi.html
-https://github.com/SwanHubX/self-hosted/blob/main/assets/swanlab.svg
-https://code.visualstudio.com/brand
+[SwanLab Python SDK API](https://docs.swanlab.cn/api/py-openapi.html)
+[SwanLab Icon](https://github.com/SwanHubX/self-hosted/blob/main/assets/swanlab.svg)  
+[Visual Studio Code Brand](https://code.visualstudio.com/brand)
