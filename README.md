@@ -1,5 +1,6 @@
 # Large Language Model for SwanLab
-The vscode plugin provides Agents with the ability to access the swanlab API
+Enables agents to access the SwanLab API for Visual Studio Code.
+使智能体能够访问适用于 Visual Studio Code 的 SwanLab API。
 
 ## Features
 | API               | type       | desc                                                            |
@@ -41,3 +42,5 @@ vsce publish
 
 ## reference
 https://docs.swanlab.cn/api/py-openapi.html
+https://github.com/SwanHubX/self-hosted/blob/main/assets/swanlab.svg
+https://code.visualstudio.com/brand
