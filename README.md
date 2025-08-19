@@ -1,5 +1,5 @@
 # Large Language Model for SwanLab
-Enables agents to access the SwanLab API for Visual Studio Code.
+Enables agents to access the SwanLab API for Visual Studio Code.  
 使智能体能够访问适用于 Visual Studio Code 的 SwanLab API。
 
 ## Features
@@ -42,5 +42,5 @@ vsce publish
 
 ## reference
 [SwanLab Python SDK API](https://docs.swanlab.cn/api/py-openapi.html)
-[SwanLab Icon](https://github.com/SwanHubX/self-hosted/blob/main/assets/swanlab.svg)  
+[SwanLab Icon](https://github.com/SwanHubX/self-hosted/blob/main/assets/swanlab.svg)
 [Visual Studio Code Brand](https://code.visualstudio.com/brand)
